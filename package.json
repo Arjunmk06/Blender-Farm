@@ -1,0 +1,27 @@
+{
+  "name": "render_farm",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Arjunmk06/Blender-Farm#readme",
+  "bugs": {
+    "url": "https://github.com/Arjunmk06/Blender-Farm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arjunmk06/Blender-Farm.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
