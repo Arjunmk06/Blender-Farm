@@ -46,6 +46,11 @@ jobs:
           script: |
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
 
+             docker stop node-app || true
+             docker rm node-app || true
+
+             docker rmi ${{ secrets.ECR_REPOSITORY }}:latest || true
+
             docker pull ${{ secrets.ECR_REPOSITORY }}:latest
 
             docker stop node-app || true
