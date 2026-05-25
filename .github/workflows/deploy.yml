@@ -24,6 +24,9 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Debug Code
+        run: cat src/routes/health.js
+
       - name: Build Docker Image
         run: docker build --no-cache -t node-app .
 
