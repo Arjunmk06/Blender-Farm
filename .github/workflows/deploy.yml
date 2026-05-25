@@ -28,17 +28,17 @@ jobs:
         run: cat src/api/v1/controller/health.controller.js
 
       - name: Build Docker Image
-        run: docker build --no-cache -t node-app .
+        run: docker build -t node-app:${{ github.sha }} .
 
       - name: Tag Docker Image
         run: |
-          docker tag node-app:latest \
-          ${{ secrets.ECR_REPOSITORY }}:latest
+          docker tag node-app:${{ github.sha }} \
+            ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 
       - name: Push Docker Image to ECR
         run: |
-          docker push \
-          ${{ secrets.ECR_REPOSITORY }}:latest
+         docker push \
+         ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -54,12 +54,12 @@ jobs:
 
              docker rmi ${{ secrets.ECR_REPOSITORY }}:latest || true
 
-            docker pull ${{ secrets.ECR_REPOSITORY }}:latest
+            docker pull ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 
             docker stop node-app || true
             docker rm node-app || true
 
             docker run -d \
-              --name node-app \
-              -p 3000:3000 \
-              ${{ secrets.ECR_REPOSITORY }}:latest
+            --name node-app \
+            -p 3000:3000 \
+            ${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
