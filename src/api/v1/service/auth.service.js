@@ -1,10 +1,10 @@
 import crypto from 'crypto'
-import { SignUpCommand ,ConfirmSignUpCommand} from '@aws-sdk/client-cognito-identity-provider';
+import { SignUpCommand ,ConfirmSignUpCommand, InitiateAuthCommand} from '@aws-sdk/client-cognito-identity-provider';
 import {client} from '../config/cognito.js'
-
+import { decodeToken } from '../middleware/auth.middleware.js';
+import { isUserPresnet, createNewUser } from '../model/dynamodb.js';
 
 export function generateHashSecret(username){
-    console.log("data", username)
 
     return crypto
            .createHmac('sha256', process.env.COGNITO_CLIENT_SECRET)
@@ -70,4 +70,41 @@ export async function confirmSignup(email, code){
             data: err
         }
     }
+}
+
+export async function loginService(email, password) {
+    try{
+        const command = new InitiateAuthCommand({
+            AuthFlow: "USER_PASSWORD_AUTH",
+            ClientId: process.env.COGNITO_CLIENT_ID,
+            AuthParameters:{
+                USERNAME: email,
+                PASSWORD: password,
+                SECRET_HASH: generateHashSecret(email)
+            }
+        })
+
+        const response = await client.send(command)
+
+        const jwtDeceoded = await decodeToken(response.AuthenticationResult.IdToken)
+        const isUserPresent = await isUserPresnet(jwtDeceoded.sub)
+
+
+        if(isUserPresent){
+            await createNewUser(jwtDeceoded)
+        }
+
+        return {
+            error: false,
+            data: response.AuthenticationResult
+        }
+
+    }catch(err){
+        console.log("error from login service", err)
+        return {
+            error: true,
+            data: err
+        }
+    }
+    
 }
