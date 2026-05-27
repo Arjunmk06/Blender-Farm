@@ -43,3 +43,22 @@ export async function confirmSignupController(req, res) {
     }
     
 }
+
+export async function loginController(req, res){
+    try{
+        const {email, password} = req.body
+
+        const response = await authService.loginService(email, password)
+
+        return res.json({
+            error: false,
+            data: response
+        })
+    }catch(err){
+        console.log('error from login controller', err)
+        return res.json({
+            error: true,
+            data: err
+        })
+    }
+}

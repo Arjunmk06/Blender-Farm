@@ -5,5 +5,6 @@ const authRouter = router.Router()
 
 authRouter.post('/signup', authController.signupController)
 authRouter.post('/confirm', authController.confirmSignupController)
+authRouter.post('/login', authController.loginController )
 
 export default authRouter
