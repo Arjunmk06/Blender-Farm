@@ -3,6 +3,7 @@ import { SignUpCommand ,ConfirmSignUpCommand, InitiateAuthCommand} from '@aws-sd
 import {client} from '../config/cognito.js'
 import { decodeToken } from '../middleware/auth.middleware.js';
 import { isUserPresnet, createNewUser } from '../model/dynamodb.js';
+import { generateHash } from '../utilits/common.functions.js';
 
 export function generateHashSecret(username){
 
@@ -20,8 +21,7 @@ export  async function signup(email, password){
             ClientId: process.env.COGNITO_CLIENT_ID,
             Username: email,
             Password: password,
-
-            SecretHash: generateHashSecret(email),
+            SecretHash: generateHash(email + process.env.COGNITO_CLIENT_ID),
 
             UserAttributes:[
                 {
@@ -53,7 +53,7 @@ export async function confirmSignup(email, code){
             ClientId: process.env.COGNITO_CLIENT_ID,
             Username: email,
             ConfirmationCode: code,
-            SecretHash: generateHashSecret(email)
+            SecretHash: generateHash(email + process.env.COGNITO_CLIENT_ID)
         })
 
         await client.send(command)
@@ -80,9 +80,10 @@ export async function loginService(email, password) {
             AuthParameters:{
                 USERNAME: email,
                 PASSWORD: password,
-                SECRET_HASH: generateHashSecret(email)
+                SECRET_HASH: generateHash(email + process.env.COGNITO_CLIENT_ID)
             }
         })
+
 
         const response = await client.send(command)
 
@@ -91,7 +92,7 @@ export async function loginService(email, password) {
 
 
         if(isUserPresent){
-            await createNewUser(jwtDeceoded)
+            await createNewUser(jwtDeceoded, response.AuthenticationResult)
         }
 
         return {
@@ -107,4 +108,42 @@ export async function loginService(email, password) {
         }
     }
     
+}
+
+export async function reLoginService(refreshToken, email) {
+    try{
+
+        const isUserPresent = await isUserPresnet(email)
+        const command = new InitiateAuthCommand({
+            AuthFlow: "REFRESH_TOKEN_AUTH",
+            ClientId: process.env.COGNITO_CLIENT_ID,
+            AuthParameters:{
+                USERNAME: email,
+                REFRESH_TOKEN: refreshToken,
+                SECRET_HASH: generateHashSecret(email),
+                
+            }
+        })
+
+        console.log("hased", generateHashSecret(email))
+
+        const response  = await client.send(command)
+
+        console.log("response", response)
+
+        return {
+            error:false,
+            data: {
+                accesToken: response.AuthenticationResult.AccessToken,
+                IdToken: response.AuthenticationResult.IdToken
+            }
+        }
+
+    }catch(err){
+        console.log("err from refresh token service", err)
+        return{
+            error: true,
+            data: err
+        }
+    }
 }

@@ -1,5 +1,6 @@
 import * as dynamodb from '../config/dynamodb.js'
 import { GetCommand , PutCommand} from '@aws-sdk/lib-dynamodb'
+import { generateHash } from '../utilits/common.functions.js'
 
 
 export async function isUserPresnet(key){
@@ -31,8 +32,10 @@ export async function isUserPresnet(key){
 
 }
 
-export async function createNewUser(data){
+export async function createNewUser(data, authenticateResult){
     try{
+
+        const refreshHased = generateHash(authenticateResult.RefreshToken)
 
         await dynamodb.docuClient.send(
             new PutCommand({
@@ -43,7 +46,8 @@ export async function createNewUser(data){
                     email: data.email,
                     plan: 'free',
                     storageUsed: 0,
-                    createAt: new Date().toISOString()
+                    createAt: new Date().toISOString(),
+                    refreshTokenHashed: refreshHased
                 }
             })
         )

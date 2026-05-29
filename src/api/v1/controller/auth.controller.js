@@ -9,7 +9,7 @@ export async function signupController(req, res) {
 
         return res.json( {
             error: false,
-            data: response
+            data: response.data
         })
 
     }catch(err){
@@ -29,7 +29,7 @@ export async function confirmSignupController(req, res) {
 
         return res.json({
             error: false,
-            data: response
+            data: response.data
         })
 
     }catch(err){
@@ -52,7 +52,7 @@ export async function loginController(req, res){
 
         return res.json({
             error: false,
-            data: response
+            data: response.data
         })
     }catch(err){
         console.log('error from login controller', err)
@@ -61,4 +61,25 @@ export async function loginController(req, res){
             data: err
         })
     }
+}
+
+export async function reLoginController(req, res) {
+    try{
+        const {refreshToken, email} = req.body
+
+        const reponse = await authService.reLoginService(refreshToken, email)
+
+        return res.json({
+            error:false,
+            data: reponse.data
+        })
+
+    }catch(err){
+        console.log("err from refresh toke controller", err)
+        return res.json({
+            error: true,
+            data: err
+        })
+    }
+    
 }

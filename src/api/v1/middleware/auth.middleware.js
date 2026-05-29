@@ -4,7 +4,6 @@ export async function decodeToken(token){
     try{
 
         const decoded = jwt.decode(token)
-        console.log("decoded data", decoded)
 
         return {
             sub: decoded.sub,
