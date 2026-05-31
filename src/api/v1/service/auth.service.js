@@ -2,17 +2,9 @@ import crypto from 'crypto'
 import { SignUpCommand ,ConfirmSignUpCommand, InitiateAuthCommand} from '@aws-sdk/client-cognito-identity-provider';
 import {client} from '../config/cognito.js'
 import { decodeToken } from '../middleware/auth.middleware.js';
-import { isUserPresnet, createNewUser } from '../model/dynamodb.js';
+import { findDataByParams, createNewUser } from '../model/dynamodb.js';
 import { generateHash } from '../utilits/common.functions.js';
-
-export function generateHashSecret(username){
-
-    return crypto
-           .createHmac('sha256', process.env.COGNITO_CLIENT_SECRET)
-           .update(username + process.env.COGNITO_CLIENT_ID)
-           .digest('base64'); 
-}
-
+import { AppError } from '../utilits/app.error.js';
 
 
 export  async function signup(email, password){
@@ -39,11 +31,17 @@ export  async function signup(email, password){
         }
 
     }catch(err){
-        console.log(err)
-        return {
-            error: true,
-            data: err
+        console.log("error in singup service", err)
+
+        if (err instanceof AppError) {
+            throw err;
         }
+
+        throw new AppError(
+            err.message || "Internal Server Error",
+            500
+        );
+        
     }
 }
 
@@ -64,11 +62,16 @@ export async function confirmSignup(email, code){
         }
 
     }catch(err){
-        console.log("err from confirm singup service", err)
-        return {
-            error: true,
-            data: err
+        console.log("error in confirmSignup service", err)
+
+        if (err instanceof AppError) {
+            throw err;
         }
+
+        throw new AppError(
+            err.message || "Internal Server Error",
+            500
+        );
     }
 }
 
@@ -88,10 +91,19 @@ export async function loginService(email, password) {
         const response = await client.send(command)
 
         const jwtDeceoded = await decodeToken(response.AuthenticationResult.IdToken)
-        const isUserPresent = await isUserPresnet(jwtDeceoded.sub)
+
+        const params= {
+            TableName: process.env.DYNAMO_DB_TABLE,
+            KeyConditionExpression: "pk = :pk AND sk = :sk",
+            ExpressionAttributeValues :{
+                ":pk": `USER#${jwtDeceoded.sub}`,
+                ":sk": "PROFILE"
+            }
+        }
+        const isUserPresent = await findDataByParams(params)
 
 
-        if(isUserPresent){
+        if(!isUserPresent || Object.keys(isUserPresent).length === 0){
             await createNewUser(jwtDeceoded, response.AuthenticationResult)
         }
 
@@ -101,11 +113,16 @@ export async function loginService(email, password) {
         }
 
     }catch(err){
-        console.log("error from login service", err)
-        return {
-            error: true,
-            data: err
+        console.log("error in login service", err)
+
+        if (err instanceof AppError) {
+            throw err;
         }
+
+        throw new AppError(
+            err.message || "Internal Server Error",
+            500
+        );
     }
     
 }
@@ -113,19 +130,46 @@ export async function loginService(email, password) {
 export async function reLoginService(refreshToken, email) {
     try{
 
-        const isUserPresent = await isUserPresnet(email)
+         const params= {
+            TableName: process.env.DYNAMO_DB_TABLE,
+            KeyConditionExpression: "email = :email AND sk = :sk",
+            IndexName: "email_index",
+            ExpressionAttributeValues :{
+                ":email": email,
+                ":sk": "PROFILE"
+            }
+        }
+
+        const isUserPresent = await findDataByParams(params)
+
+        
+        
+        if(!isUserPresent || Object.keys(isUserPresent).length === 0){
+            const errMessage = "invalid email, user is not present. Please signup"
+            const errStatus = 404
+            throw new AppError(errMessage, errStatus)
+        }
+
+        const hashedRefreshToken = generateHash(refreshToken)
+
+        if(hashedRefreshToken != isUserPresent[0].refreshTokenHashed){
+            const errMessage = "invalid refresh token. Please login "
+            const errStatus = 401
+            throw new AppError(errMessage, errStatus)
+        } 
+
+        const userId = isUserPresent[0].pk.split("#")[1]
         const command = new InitiateAuthCommand({
             AuthFlow: "REFRESH_TOKEN_AUTH",
             ClientId: process.env.COGNITO_CLIENT_ID,
             AuthParameters:{
                 USERNAME: email,
                 REFRESH_TOKEN: refreshToken,
-                SECRET_HASH: generateHashSecret(email),
+                SECRET_HASH: generateHashSecret(userId),
                 
             }
         })
 
-        console.log("hased", generateHashSecret(email))
 
         const response  = await client.send(command)
 
@@ -140,10 +184,16 @@ export async function reLoginService(refreshToken, email) {
         }
 
     }catch(err){
-        console.log("err from refresh token service", err)
-        return{
-            error: true,
-            data: err
+
+        console.log("error in relogin service", err)
+
+        if (err instanceof AppError) {
+            throw err;
         }
+
+        throw new AppError(
+            err.message || "Internal Server Error",
+            500
+        );
     }
 }

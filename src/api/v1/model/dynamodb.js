@@ -1,33 +1,28 @@
 import * as dynamodb from '../config/dynamodb.js'
-import { GetCommand , PutCommand} from '@aws-sdk/lib-dynamodb'
+import { QueryCommand , PutCommand} from '@aws-sdk/lib-dynamodb'
 import { generateHash } from '../utilits/common.functions.js'
 
 
-export async function isUserPresnet(key){
+export async function findDataByParams(params){
     try{
-
-
+        console.log(params)
         const response = await dynamodb.docuClient.send(
-            new GetCommand({
-                TableName: process.env.DYNAMO_DB_TABLE,
-                Key: {pk: `USER#${key}`, sk: "PROFILE"}
-            })
+            new QueryCommand(params)
         )
 
-        console.log("response",response)
 
-        if(response.Item === undefined){
-            return true
+
+        if(response.Items.length == 0){
+            return {}
         }else{
-            return false
+            return response.Items
         }
 
     }catch(err){
         console.log("error from model dynamodb", err)
-        return{
-            error: true,
-            data: err
-        }
+        const errorMessage = err.data?.message || "internal error"
+        const errorStatus = err.data?.statusCode || 500
+        throw new AppError( errorMessage, errorStatus )
     }
 
 }
@@ -54,9 +49,8 @@ export async function createNewUser(data, authenticateResult){
 
     }catch(err){
         console.log("err from crateuser model", err)
-        return {
-            error: true,
-            data:err
-        }
+        const errorMessage = err.data?.message || "internal error"
+        const errorStatus = err.data?.statusCode || 500
+        throw new AppError( errorMessage, errorStatus )
     }
 }

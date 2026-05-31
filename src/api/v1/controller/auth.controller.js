@@ -1,7 +1,7 @@
 import * as authService from '../service/auth.service.js'
 
 
-export async function signupController(req, res) {
+export async function signupController(req, res, next) {
     try{
         const {email, password} = req.body
 
@@ -14,14 +14,11 @@ export async function signupController(req, res) {
 
     }catch(err){
         console.log("error from authon controller sigup", err)
-        return res.json( {
-            error: true,
-            data: err
-        })
+        next(err)
     }
 }
 
-export async function confirmSignupController(req, res) {
+export async function confirmSignupController(req, res, next) {
     try{
         const {email, code} = req.body
 
@@ -34,21 +31,18 @@ export async function confirmSignupController(req, res) {
 
     }catch(err){
         console.log("error from confrim signup controllerr", err)
-        return res.json(
-            {
-                error: true,
-                data:err
-            }
-        )
+        next(err)
     }
     
 }
 
-export async function loginController(req, res){
+export async function loginController(req, res, next){
     try{
         const {email, password} = req.body
 
         const response = await authService.loginService(email, password)
+
+        console.log("check",response)
 
         return res.json({
             error: false,
@@ -56,14 +50,11 @@ export async function loginController(req, res){
         })
     }catch(err){
         console.log('error from login controller', err)
-        return res.json({
-            error: true,
-            data: err
-        })
+        next(err)
     }
 }
 
-export async function reLoginController(req, res) {
+export async function reLoginController(req, res, next) {
     try{
         const {refreshToken, email} = req.body
 
@@ -75,11 +66,7 @@ export async function reLoginController(req, res) {
         })
 
     }catch(err){
-        console.log("err from refresh toke controller", err)
-        return res.json({
-            error: true,
-            data: err
-        })
+        next(err)
     }
     
 }
