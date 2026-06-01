@@ -5,10 +5,12 @@ import { AppError } from '../utilits/app.error.js';
 
 
 
-export async function decodeToken(token){
+export async function decodeToken(token,type='access'){
     try{
-        const verifier = getVerifier()
+        const verifier = getVerifier(type)
         const decoded = await verifier.verify(token)
+
+        console.log("Test", decoded)
 
         return {
             sub: decoded.sub,
@@ -20,8 +22,8 @@ export async function decodeToken(token){
     }
 }
 
-export function authMiddleware(req, res,next){
-    const auth = req.header('Authorization')
+export async function authMiddleware(req, res,next){
+    const authHeader = req.header('Authorization')
     const token = authHeader && authHeader.split(' ')[1];
 
     if(!token){
@@ -33,7 +35,7 @@ export function authMiddleware(req, res,next){
 
     try {
   
-        const decoded = decodeToken(token)
+        const decoded = await decodeToken(token)
         req.user = {
             sub: decoded.sub,
             email: decoded.sub
