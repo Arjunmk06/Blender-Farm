@@ -42,7 +42,6 @@ export async function loginController(req, res, next){
 
         const response = await authService.loginService(email, password)
 
-        console.log("check",response)
 
         return res.json({
             error: false,

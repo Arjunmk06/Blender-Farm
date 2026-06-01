@@ -1,10 +1,12 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import healthRouter from './api/v1/router/health.router.js';
 import authRouter from './api/v1/router/auth.router.js';
 import {errorMiddleware}  from './api/v1/middleware/error.middleware.js';
-import dotenv from 'dotenv';
 
-dotenv.config();
+
+
 
 
 

@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { SignUpCommand ,ConfirmSignUpCommand, InitiateAuthCommand} from '@aws-sdk/client-cognito-identity-provider';
 import {client} from '../config/cognito.js'
 import { decodeToken } from '../middleware/auth.middleware.js';
-import { findDataByParams, createNewUser } from '../model/dynamodb.js';
+import { findDataByParams, createNewUser } from '../model/user.js';
 import { generateHash } from '../utilits/common.functions.js';
 import { AppError } from '../utilits/app.error.js';
 
@@ -90,7 +90,7 @@ export async function loginService(email, password) {
 
         const response = await client.send(command)
 
-        const jwtDeceoded = await decodeToken(response.AuthenticationResult.IdToken)
+        const jwtDeceoded = await decodeToken(response.AuthenticationResult.IdToken,'id')
 
         const params= {
             TableName: process.env.DYNAMO_DB_TABLE,
@@ -165,7 +165,7 @@ export async function reLoginService(refreshToken, email) {
             AuthParameters:{
                 USERNAME: email,
                 REFRESH_TOKEN: refreshToken,
-                SECRET_HASH: generateHashSecret(userId),
+                SECRET_HASH: generateHash(userId),
                 
             }
         })

@@ -1,11 +1,11 @@
 import * as dynamodb from '../config/dynamodb.js'
 import { QueryCommand , PutCommand} from '@aws-sdk/lib-dynamodb'
 import { generateHash } from '../utilits/common.functions.js'
+import { AppError } from '../utilits/app.error.js'
 
 
 export async function findDataByParams(params){
     try{
-        console.log(params)
         const response = await dynamodb.docuClient.send(
             new QueryCommand(params)
         )
@@ -42,7 +42,8 @@ export async function createNewUser(data, authenticateResult){
                     plan: 'free',
                     storageUsed: 0,
                     createAt: new Date().toISOString(),
-                    refreshTokenHashed: refreshHased
+                    refreshTokenHashed: refreshHased,
+                    entityType: "PROFILE"
                 }
             })
         )
@@ -54,3 +55,5 @@ export async function createNewUser(data, authenticateResult){
         throw new AppError( errorMessage, errorStatus )
     }
 }
+
+
