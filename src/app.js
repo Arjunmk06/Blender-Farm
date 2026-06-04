@@ -3,10 +3,8 @@ dotenv.config();
 import express from 'express';
 import healthRouter from './api/v1/router/health.router.js';
 import authRouter from './api/v1/router/auth.router.js';
+import projectRouter from './api/v1/router/project.router.js';
 import {errorMiddleware}  from './api/v1/middleware/error.middleware.js';
-
-
-
 
 
 
@@ -18,6 +16,7 @@ app.use(express.json());
 
 app.use('/api/v1', healthRouter);
 app.use('/api/v1', authRouter)
+app.use('/api/v1', projectRouter)
 
 
 app.use(errorMiddleware)
