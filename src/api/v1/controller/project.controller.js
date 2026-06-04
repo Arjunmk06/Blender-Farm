@@ -72,3 +72,21 @@ export async function updateProjectController(req, res, next){
     }
 
 }
+
+export async function deleteProjecController(req, res, next){
+    try{
+
+        const userDetails = req.user
+        const projectId = req.params.projectId
+
+        const response = await projectService.deleteProject(projectId, userDetails)
+
+        return res.json({
+            error: false,
+            data: response.data
+        })
+
+    }catch(err){
+        next(err)
+    }
+}

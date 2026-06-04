@@ -121,7 +121,7 @@ export async function loginService(email, password) {
                     ":newValue": generateHash(response.AuthenticationResult.RefreshToken)
                 }
             }
-            
+
             await updateByParams(updateParams)
         }
         return {
@@ -176,7 +176,6 @@ export async function reLoginService(refreshToken, email) {
         } 
 
         const userId = isUserPresent[0].pk.split("#")[1]
-        console.log("userID", generateHash(userId, "hex"), userId)
         const command = new InitiateAuthCommand({
             AuthFlow: "REFRESH_TOKEN_AUTH",
             ClientId: process.env.COGNITO_CLIENT_ID,
@@ -190,7 +189,7 @@ export async function reLoginService(refreshToken, email) {
 
         const response  = await client.send(command)
 
-        console.log("response", response)
+   
 
         return {
             error:false,

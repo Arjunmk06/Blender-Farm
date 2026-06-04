@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { createProject } from '../model/project.js';
-import { findDataByParams, getItemByPkSk, createUpdateKeys, updateByParams} from '../model/common.db.js';
+import { findDataByParams, getItemByPkSk, createUpdateKeys, updateByParams, deleteItemByPkSk} from '../model/common.db.js';
 import { AppError, errWrapper } from '../utilits/app.error.js';
 
 
@@ -149,10 +149,8 @@ export async function updateProject(data,projectId,userDetails){
                 ReturnValues: "UPDATED_NEW" 
             }
 
-            console.log(updateParams)
             
             const response = await updateByParams(updateParams)
-            console.log("resp",response)
 
             return {
                 error: false,
@@ -161,6 +159,36 @@ export async function updateProject(data,projectId,userDetails){
 
     }catch(err){
         console.log("err from update project", err)
+        errWrapper(err)
+    }
+}
+
+export async function deleteProject(projectId, userDetails){
+    try{
+
+        const pk = `USER#${userDetails.sub}`
+        const sk =`PROJECT#${projectId}`
+
+        const item = await getItemByPkSk(pk, sk)
+
+        if(item === undefined){
+            throw new AppError(
+                'Project not found',
+                404
+            )
+        }
+
+        const response = await deleteItemByPkSk(pk, sk)
+
+        if(response.httpStatusCode === 200){
+                return {
+                error: false,
+                data: 'Project delete succesfully'
+            }
+        }
+
+    }catch(err){
+        console.log("err from delete project", err)
         errWrapper(err)
     }
 }

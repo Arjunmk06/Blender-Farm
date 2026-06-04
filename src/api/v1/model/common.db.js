@@ -1,5 +1,5 @@
 import * as dynamodb from '../config/dynamodb.js'
-import { QueryCommand , PutCommand, UpdateCommand, GetCommand} from '@aws-sdk/lib-dynamodb'
+import { QueryCommand , PutCommand, UpdateCommand, GetCommand, DeleteCommand} from '@aws-sdk/lib-dynamodb'
 import { generateHash } from '../utilits/common.functions.js'
 import { AppError, errWrapper } from '../utilits/app.error.js'
 
@@ -87,4 +87,26 @@ export function createUpdateKeys(params) {
         ExpressionAttributeValues: ExpressionAttributeValues
     }
     
+}
+
+export async function deleteItemByPkSk(pk,sk){
+    try{
+
+        const command = {
+            TableName: process.env.DYNAMO_DB_TABLE,
+            Key:{
+                pk: pk,
+                sk: sk
+            }
+        }
+
+        const response = await dynamodb.docuClient.send(
+            new DeleteCommand(command)
+        )
+
+        return response
+
+    }catch(err){
+        errWrapper(err)
+    }
 }
