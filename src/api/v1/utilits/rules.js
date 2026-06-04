@@ -44,7 +44,6 @@ export const refreshTokenRules = [
     body('refreshToken')
     .notEmpty().withMessage('Refresh token is required')
     .trim()
-    .isJWT().withMessage('Invalid token format structure')
 ]
 
 

@@ -65,9 +65,22 @@ export async function getAllProject(userDetails){
 
         const result = await findDataByParams(params)
 
+        const projects = []
+
+        for(let item of result){
+            projects.push({
+                id: item.projectId,
+                title: item.title,
+                description: item?.description || "",
+                status: item.status,
+                createdAt:item.createdAt,
+                updatedAt: item.updatedAt
+            })
+        }
+
         return {
             error: false,
-            data: result
+            data: projects
         }
 
     }catch(err){
@@ -107,7 +120,7 @@ export async function getProject(projectId, userDetails){
 
 
     }catch(err){
-        console.log("error from get project ". err)
+        console.log("error from get project ", err)
         errWrapper(err
         )
     }
@@ -128,7 +141,20 @@ export async function updateProject(data,projectId,userDetails){
             )
         }
 
+        if(Object.keys(data).length === 0){
+            throw new AppError(
+                'Alteast one field required to update',
+                400
+            )
+        }
+
         const updateData = createUpdateKeys(data)
+
+        //ading updatedAt case
+
+        data.UpdateExpression+='#updatedAt = :updatedAt'
+        data.ExpressionAttributeNames['#updatedAt'] = 'updatedAt'
+        data.ExpressionAttributeValues[':updatedAt'] = new Date().toISOString()
 
         const updateParams = {
                 TableName: process.env.DYNAMO_DB_TABLE,
@@ -171,14 +197,12 @@ export async function deleteProject(projectId, userDetails){
             )
         }
 
-        const response = await deleteItemByPkSk(pk, sk)
+        await deleteItemByPkSk(pk, sk)
 
-        if(response.httpStatusCode === 200){
-                return {
-                error: false,
-                data: 'Project delete succesfully'
+        return {
+            error:false,
+            data:"Project deleted successfully"
             }
-        }
 
     }catch(err){
         console.log("err from delete project", err)
