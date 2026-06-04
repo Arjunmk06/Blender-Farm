@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { createProject } from '../model/project.js';
-import { findDataByParams } from '../model/common.db.js';
+import { findDataByParams, getItemByPkSk, createUpdateKeys, updateByParams} from '../model/common.db.js';
 import { AppError, errWrapper } from '../utilits/app.error.js';
 
 
@@ -79,6 +79,88 @@ export async function getAllProject(userDetails){
 
     }catch(err){
         console.log("error from get all project ", err)
+        errWrapper(err)
+    }
+}
+
+export async function getProject(projectId, userDetails){
+    try{
+
+        const pk = `USER#${userDetails.sub}`
+        const sk =`PROJECT#${projectId}`
+
+        const item = await getItemByPkSk(pk, sk)
+
+        if(item === undefined){
+            throw new AppError(
+                'Project not found',
+                404
+            )
+        }
+
+        const response = {
+            id: item.projectId,
+            title: item.title,
+            description: item?.description || "",
+            status: item.status,
+            createdAt:item.createdAt,
+            updatedAt: item.updatedAt
+        }
+
+        return {
+            error: false,
+            data: response
+        }
+
+
+    }catch(err){
+        console.log("error from get project ". err)
+        errWrapper(err
+        )
+    }
+}
+
+export async function updateProject(data,projectId,userDetails){
+    try{
+
+        const pk = `USER#${userDetails.sub}`
+        const sk =`PROJECT#${projectId}`
+
+        const item = await getItemByPkSk(pk, sk)
+
+        if(item === undefined){
+            throw new AppError(
+                'Project not found',
+                404
+            )
+        }
+
+        const updateData = createUpdateKeys(data)
+
+        const updateParams = {
+                TableName: process.env.DYNAMO_DB_TABLE,
+                Key:{
+                    pk: pk,
+                    sk: sk
+                },
+                UpdateExpression: updateData.UpdateExpression,
+                ExpressionAttributeNames: updateData.ExpressionAttributeNames,
+                ExpressionAttributeValues: updateData.ExpressionAttributeValues,
+                ReturnValues: "UPDATED_NEW" 
+            }
+
+            console.log(updateParams)
+            
+            const response = await updateByParams(updateParams)
+            console.log("resp",response)
+
+            return {
+                error: false,
+                data: response
+            }
+
+    }catch(err){
+        console.log("err from update project", err)
         errWrapper(err)
     }
 }

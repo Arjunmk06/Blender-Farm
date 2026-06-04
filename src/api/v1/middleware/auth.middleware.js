@@ -10,7 +10,6 @@ export async function decodeToken(token,type='access'){
         const verifier = getVerifier(type)
         const decoded = await verifier.verify(token)
 
-        console.log("Test", decoded)
 
         return {
             sub: decoded.sub,

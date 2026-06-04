@@ -33,3 +33,42 @@ export async function getAllProjectController(req, res, next){
         next(err)
     }
 }
+
+export async function getProjectController(req, res,next){
+    try{
+
+        const projectId = req.params.projectId
+        const userDetails = req.user
+
+        const response = await projectService.getProject(projectId, userDetails)
+
+        return res.json({
+            error: false,
+            data: response.data
+        })
+
+    }catch(err){
+        next(err)
+    }
+}
+
+
+export async function updateProjectController(req, res, next){
+    try{
+        const data = req.body
+        const projectId = req.params.projectId
+        const userDetails = req.user
+
+        const response = await projectService.updateProject(data, projectId, userDetails)
+
+        return res.json({
+            error: false,
+            data: response.data
+        })
+
+
+    }catch(err){
+        next(err)
+    }
+
+}
