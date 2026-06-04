@@ -45,14 +45,7 @@ export async function createProjectService(title, description, userDetails){
         }
     }catch(err){
         console.log("error in create project service", err)
-
-        if (err instanceof AppError) {
-            throw err;
-        }
-        throw new AppError(
-            err.message || "Internal Server Error",
-            500
-        );
+        errWrapper(err)
     }
 
 }

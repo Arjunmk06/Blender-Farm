@@ -5,7 +5,7 @@ import { decodeToken } from '../middleware/auth.middleware.js';
 import {  createNewUser } from '../model/user.js';
 import { findDataByParams, updateByParams } from '../model/common.db.js';
 import { generateHash } from '../utilits/common.functions.js';
-import { AppError } from '../utilits/app.error.js';
+import { AppError, errWrapper } from '../utilits/app.error.js';
 
 
 export  async function signup(email, password){
@@ -33,15 +33,7 @@ export  async function signup(email, password){
 
     }catch(err){
         console.log("error in singup service", err)
-
-        if (err instanceof AppError) {
-            throw err;
-        }
-
-        throw new AppError(
-            err.message || "Internal Server Error",
-            500
-        );
+        
         
     }
 }
@@ -64,15 +56,7 @@ export async function confirmSignup(email, code){
 
     }catch(err){
         console.log("error in confirmSignup service", err)
-
-        if (err instanceof AppError) {
-            throw err;
-        }
-
-        throw new AppError(
-            err.message || "Internal Server Error",
-            500
-        );
+        errWrapper(err)
     }
 }
 
@@ -131,15 +115,7 @@ export async function loginService(email, password) {
 
     }catch(err){
         console.log("error in login service", err)
-
-        if (err instanceof AppError) {
-            throw err;
-        }
-
-        throw new AppError(
-            err.message || "Internal Server Error",
-            500
-        );
+        errWrapper(err)
     }
     
 }
@@ -202,14 +178,6 @@ export async function reLoginService(refreshToken, email) {
     }catch(err){
 
         console.log("error in relogin service", err)
-
-        if (err instanceof AppError) {
-            throw err;
-        }
-
-        throw new AppError(
-            err.message || "Internal Server Error",
-            500
-        );
+        errWrapper(err)
     }
 }
