@@ -26,7 +26,7 @@ export async function uploadFile(data, userDetails){
         const fileData = {
             file: uploadFile,
             projectId: data.projectId,
-            userId: userDetails.sub
+            userId: userDetails.sub,
         }
 
         await createFile(fileData)
@@ -74,7 +74,6 @@ export async function getFileByProject(projectId, userDetails){
                 fileName: item.fileName,
                 mimeType: item.mimeType,
                 fileSize: item.fileSize,
-                fileSize: item.fileSize,
                 uploadedAt: item.uploadedAt
             })
         }
@@ -90,9 +89,9 @@ export async function getFileByProject(projectId, userDetails){
     }
 }
 
-export async function donwloadFile(fileId, projectId, userDetails) {
+export async function downloadFile(fileId, projectId, userDetails) {
     try{
-        await validateData(userDetails.sub, projectId, fileId)
+        const {projectDetails, fileDetails} = await validateData(userDetails.sub, projectId, fileId)
 
         const downloadable = await generateSignedUrl(fileDetails.s3Key)
 
@@ -100,8 +99,8 @@ export async function donwloadFile(fileId, projectId, userDetails) {
         return{
             error: false,
             data:  {
-                fileId: file.fileId,
-                fileName: file.fileName,
+                fileId: fileDetails.fileId,
+                fileName: fileDetails.fileName,
                 downloadable,
                 expiresIn: 3600,
             }
@@ -147,14 +146,14 @@ export async function updateFile(fileId, projectId, userDetails, fileData) {
         }
 
         const {projectDetails, fileDetails} =  await validateData(userDetails.sub, projectId, fileId)
-
-        await deleteFileFromS3(fileDetails.s3Key)
         const extraInfo = {
             userId: userDetails.sub,
             projectId: projectId,
             key: fileDetails.s3Key.split("/").at(-1)
         }
         const uploadFile = await fileUpload(fileData, extraInfo)
+        await deleteFileFromS3(fileDetails.s3Key)
+      
         const updatedAt = new Date().toISOString()
 
         const updatingInfo = {
@@ -162,6 +161,7 @@ export async function updateFile(fileId, projectId, userDetails, fileData) {
             fileName: uploadFile.fileName.split("#")[1],
             fileSize: uploadFile.size,
             mimeType: uploadFile.mimeType,
+            s3Key: uploadFile.s3Key
         }
 
         const updateData = createUpdateKeys(updatingInfo)

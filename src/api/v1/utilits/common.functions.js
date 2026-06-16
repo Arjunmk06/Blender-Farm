@@ -1,5 +1,5 @@
 import crypto from 'crypto' 
-import { errWrapper } from './app.error.js';
+import { AppError,errWrapper } from './app.error.js';
 import { getItemByPkSk } from '../model/common.db.js';
 
 
