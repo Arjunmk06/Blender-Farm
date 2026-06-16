@@ -17,6 +17,7 @@ export async function fileUpload(file, extraInfo){
             
         }
         const  key= `${extraInfo.userId}/${extraInfo.projectId}/${uniqueFileName}`
+        console.log("test", key)
 
         const command = new PutObjectCommand({
             Bucket: process.env.S3_BUCKET_NAME,
@@ -31,7 +32,8 @@ export async function fileUpload(file, extraInfo){
             fileName: uniqueFileName,
             Bucket:process.env.S3_BUCKET_NAME,
             size: file.size,
-            mimeType: file.mimetype
+            mimeType: file.mimetype,
+            s3Key: key
         }
     }catch(err){
         errWrapper(err)
@@ -60,7 +62,7 @@ export async function createFile(data){
                     fileName: fileName,
                     fileSize: data.file.size,
                     mimeType: data.file.mimeType,
-                    s3Key: `${userId}/${projectId}/${data.file.fileName}`,
+                    s3Key: data.file.s3Key,
                     uploadedAt: new Date().toISOString(),
                     fileId: fileId
                 }

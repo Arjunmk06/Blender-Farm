@@ -37,7 +37,7 @@ export async function filesInAProject(req,res,next) {
     }
 }
 
-export async function fileDownloadulr(req, res, next) {
+export async function downloadFileController(req, res, next) {
     try{
         console.log("reached here 3")
         const projectId = req.params.projectId
@@ -45,7 +45,7 @@ export async function fileDownloadulr(req, res, next) {
         const userDetails = req.user
 
         console.log("reached here 1")
-        const response = await fileService.donwloadFile(fileId, projectId, userDetails)
+        const response = await fileService.downloadFile(fileId, projectId, userDetails)
         console.log("reached here 2")
 
         return res.json({

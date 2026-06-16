@@ -33,7 +33,7 @@ export  async function signup(email, password){
 
     }catch(err){
         console.log("error in singup service", err)
-        
+        errWrapper(err)
         
     }
 }
