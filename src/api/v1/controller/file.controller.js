@@ -27,6 +27,7 @@ export async function filesInAProject(req,res,next) {
         console.log(userDetails)
 
         const response = await fileService.getFileByProject(projectId, userDetails)
+        console.log("files", response)
 
         return res.json({
             error:false,

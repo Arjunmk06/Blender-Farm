@@ -15,7 +15,7 @@ export async function findDataByParams(params){
 
 
         if(response.Items.length == 0){
-            return {}
+            return []
         }else{
             return response.Items
         }
