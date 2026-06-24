@@ -170,7 +170,7 @@ export async function reLoginService(refreshToken, email) {
         return {
             error:false,
             data: {
-                accesToken: response.AuthenticationResult.AccessToken,
+                accessToken: response.AuthenticationResult.AccessToken,
                 IdToken: response.AuthenticationResult.IdToken
             }
         }

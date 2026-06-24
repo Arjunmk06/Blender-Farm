@@ -68,6 +68,8 @@ export async function getFileByProject(projectId, userDetails){
 
         const files = []
 
+        console.log("files", result)
+
         for(let item of result){
             files.push({
                 id: item.fileId,
