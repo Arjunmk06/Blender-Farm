@@ -154,7 +154,14 @@ export async function updateFile(fileId, projectId, userDetails, fileData) {
             key: fileDetails.s3Key.split("/").at(-1)
         }
         const uploadFile = await fileUpload(fileData, extraInfo)
-        await deleteFileFromS3(fileDetails.s3Key)
+
+        console.log(uploadFile.s3Key)
+        console.log(fileDetails.s3Key)
+        if(uploadFile.s3Key != fileDetails.s3Key){
+            await deleteFileFromS3(fileDetails.s3Key)
+        }
+
+       
       
         const updatedAt = new Date().toISOString()
 
