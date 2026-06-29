@@ -1,10 +1,12 @@
 import multer from "multer";
 import { AppError } from "../utilits/app.error.js";
+import path from 'path'
 
 function  fileFilter(req,file,cb) {
-    const allowedMimeType = "application/pdf"
+    const allowedext = ".blend"
+    const filePath = path.extname(file.originalname); 
 
-    if(file.mimetype != allowedMimeType){
+    if(filePath != allowedext){
         return cb(new AppError(
             "only support blender file",
             400
@@ -19,7 +21,7 @@ export const upload = multer({
     storage: multer.memoryStorage(),
     fileFilter,
     limits:{
-        fileSize: 10 * 1024 * 1024, // 10 MB
+        fileSize: 2* 1024* 1024 * 1024, // 10 MB
     }
 })
 
